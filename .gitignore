@@ -1,0 +1,6 @@
+/khealth
+/dist/
+.DS_Store
+*.swp
+khealth.yaml
+!internal/**/khealth.yaml

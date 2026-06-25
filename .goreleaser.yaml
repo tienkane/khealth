@@ -1,0 +1,79 @@
+# GoReleaser v2 — https://goreleaser.com
+version: 2
+
+project_name: khealth
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: khealth
+    main: .
+    binary: khealth
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/tienkane/khealth/internal/cli.version={{.Version}}
+      - -X github.com/tienkane/khealth/internal/cli.commit={{.Commit}}
+      - -X github.com/tienkane/khealth/internal/cli.date={{.Date}}
+
+archives:
+  - id: khealth
+    formats: ["tar.gz"]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: ["zip"]
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+
+homebrew_casks:
+  - name: khealth
+    binaries:
+      - khealth
+    homepage: "https://github.com/tienkane/khealth"
+    description: "Unified health check for your local services in one status table"
+    license: "MIT"
+    repository:
+      owner: tienkane
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Casks
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/khealth"]
+          end
+
+release:
+  github:
+    owner: tienkane
+    name: khealth
