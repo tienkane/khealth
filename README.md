@@ -30,7 +30,9 @@ not DOWN — "can't tell" is not the same as "it's broken".
   `DOWN` (so it slots into CI, pre-commit hooks, or a launchd job).
 - 🔌 **No agents, no daemons, few deps** — Redis is checked by speaking RESP on
   the wire (no `redis-cli`), Postgres with a real `select 1`.
-- 🧰 **`khealth init`** — scaffolds a commented config covering every check type.
+- 🧰 **`khealth init` that knows your machine** — probes running Docker
+  containers, PM2 apps, and dev-runtime listening ports, and seeds the config
+  from what's actually there (no blank page).
 
 ## Install
 
@@ -47,10 +49,17 @@ go install github.com/tienkane/khealth@latest
 ## Quick start
 
 ```sh
-khealth init          # write a starter khealth.yaml
-$EDITOR khealth.yaml  # describe your services
+khealth init          # detect running services, seed khealth.yaml from them
+$EDITOR khealth.yaml  # add HTTP/Postgres checks (left as commented examples)
 khealth               # check them all
 ```
+
+`khealth init` probes the machine — running Docker containers, PM2 apps, and
+listening ports owned by common dev runtimes (node, python, postgres, redis, …)
+— and writes a config seeded with what it finds. Things it can't infer (an HTTP
+health URL, a Postgres DSN with credentials) are left as commented examples to
+fill in. If nothing is detected, it writes a full template covering every check
+type.
 
 ## Usage
 
